@@ -122,7 +122,7 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 					</div>
 					<div class="octo-import-form-row">
 						<label for="pimport-db-prefix"><?php esc_html_e( 'Tabellenprefix', 'octoserv' ); ?></label>
-						<input type="text" id="pimport-db-prefix" value="tbl" class="octo-input" style="width:120px;">
+						<input type="text" id="pimport-db-prefix" value="<?php echo esc_attr( $saved_db['prefix'] ?? 'tbl' ); ?>" class="octo-input" style="width:120px;">
 					</div>
 				</div>
 

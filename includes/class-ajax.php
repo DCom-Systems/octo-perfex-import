@@ -33,7 +33,7 @@ class Octo_AJAX_Perfex_Import {
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Nicht angemeldet.' ), 403 );
 		}
-		if ( ! function_exists( 'octo_user_can_access_funktionen_perfex_import' ) || ! octo_user_can_access_funktionen_perfex_import() ) {
+		if ( ! function_exists( 'octo_user_is_admin' ) || ! octo_user_is_admin() ) {
 			wp_send_json_error( array( 'message' => 'Keine Berechtigung für Perfex-Import.' ), 403 );
 		}
 	}
