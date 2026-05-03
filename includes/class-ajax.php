@@ -94,16 +94,16 @@ class Octo_AJAX_Perfex_Import {
 
 		$counts = array();
 		foreach ( array( 'companies' => 'clients', 'contacts' => 'contacts', 'notes' => 'customernotes' ) as $key => $table ) {
-			$res = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}_{$table}`" );
+			$res = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}{$table}`" );
 			$counts[ $key ] = $res ? (int) $res->fetch_row()[0] : 0;
 		}
 
 		// Aktive Clients zählen
-		$res_active = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}_clients` WHERE active = 1" );
+		$res_active = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}clients` WHERE active = 1" );
 		$counts['companies_active'] = $res_active ? (int) $res_active->fetch_row()[0] : 0;
 
 		// Rechnungsempfänger zählen
-		$res_inv = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}_contacts` WHERE invoice_emails = 1" );
+		$res_inv = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}contacts` WHERE invoice_emails = 1" );
 		$counts['invoice_recipients'] = $res_inv ? (int) $res_inv->fetch_row()[0] : 0;
 
 		$mysqli->close();
@@ -137,7 +137,7 @@ class Octo_AJAX_Perfex_Import {
 
 		$prefix     = $db_config['prefix'];
 		$where      = $include_inactive ? '' : 'WHERE active = 1 ';
-		$clients    = $mysqli->query( "SELECT * FROM `{$prefix}_clients` {$where}ORDER BY userid ASC LIMIT 5" );
+		$clients    = $mysqli->query( "SELECT * FROM `{$prefix}clients` {$where}ORDER BY userid ASC LIMIT 5" );
 		$preview    = array();
 
 		if ( $clients ) {
@@ -151,7 +151,7 @@ class Octo_AJAX_Perfex_Import {
 					'contacts' => array(),
 				);
 
-				$con_res = $mysqli->query( "SELECT * FROM `{$prefix}_contacts` WHERE userid = {$client->userid} ORDER BY is_primary DESC, id ASC" );
+				$con_res = $mysqli->query( "SELECT * FROM `{$prefix}contacts` WHERE userid = {$client->userid} ORDER BY is_primary DESC, id ASC" );
 				if ( $con_res ) {
 					while ( $con = $con_res->fetch_object() ) {
 						$item['contacts'][] = array(
@@ -248,7 +248,7 @@ class Octo_AJAX_Perfex_Import {
 	private function batch_companies( \mysqli $mysqli, string $prefix, bool $include_inactive, int $owner_id, int $offset, array &$stats, object $wpdb ): void {
 		$where = $include_inactive ? '' : 'WHERE active = 1 ';
 		$limit = self::BATCH_SIZE_COMPANIES;
-		$res   = $mysqli->query( "SELECT * FROM `{$prefix}_clients` {$where}ORDER BY userid ASC LIMIT {$limit} OFFSET {$offset}" );
+		$res   = $mysqli->query( "SELECT * FROM `{$prefix}clients` {$where}ORDER BY userid ASC LIMIT {$limit} OFFSET {$offset}" );
 
 		$count = 0;
 		if ( ! $res ) {
@@ -345,8 +345,8 @@ class Octo_AJAX_Perfex_Import {
 		$where = $include_inactive ? '' : 'WHERE cl.active = 1 ';
 		$limit = self::BATCH_SIZE_CONTACTS;
 		$sql   = "SELECT c.*, cl.company AS company_name
-		          FROM `{$prefix}_contacts` c
-		          LEFT JOIN `{$prefix}_clients` cl ON cl.userid = c.userid
+		          FROM `{$prefix}contacts` c
+		          LEFT JOIN `{$prefix}clients` cl ON cl.userid = c.userid
 		          {$where}ORDER BY c.id ASC LIMIT {$limit} OFFSET {$offset}";
 		$res   = $mysqli->query( $sql );
 
@@ -524,9 +524,9 @@ class Octo_AJAX_Perfex_Import {
 
 		// Notizen mit primärer E-Mail des Kunden abrufen
 		$sql = "SELECT cn.*, c.email
-		        FROM `{$prefix}_customernotes` cn
-		        LEFT JOIN `{$prefix}_contacts` c ON c.userid = cn.userid AND c.is_primary = 1
-		        LEFT JOIN `{$prefix}_clients` cl ON cl.userid = cn.userid
+		        FROM `{$prefix}customernotes` cn
+		        LEFT JOIN `{$prefix}contacts` c ON c.userid = cn.userid AND c.is_primary = 1
+		        LEFT JOIN `{$prefix}clients` cl ON cl.userid = cn.userid
 		        {$where}ORDER BY cn.id ASC LIMIT {$limit} OFFSET {$offset}";
 		$res = $mysqli->query( $sql );
 
