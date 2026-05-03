@@ -404,6 +404,7 @@
         if (s.host)   $('#pimport-db-host').val(s.host);
         if (s.name)   $('#pimport-db-name').val(s.name);
         if (s.user)   $('#pimport-db-user').val(s.user);
+        if (s.pass)   $('#pimport-db-pass').val(s.pass);
         if (s.prefix) $('#pimport-db-prefix').val(s.prefix);
     });
 

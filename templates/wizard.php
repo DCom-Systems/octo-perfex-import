@@ -33,6 +33,7 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 		'host'   => ! empty( $saved_db['host'] )   ? $saved_db['host']   : '',
 		'name'   => ! empty( $saved_db['name'] )   ? $saved_db['name']   : '',
 		'user'   => ! empty( $saved_db['user'] )   ? $saved_db['user']   : '',
+		'pass'   => ! empty( $saved_db['pass'] )   ? $saved_db['pass']   : '',
 		'prefix' => ! empty( $saved_db['prefix'] ) ? $saved_db['prefix'] : 'tbl',
 	),
 	'i18n'     => array(

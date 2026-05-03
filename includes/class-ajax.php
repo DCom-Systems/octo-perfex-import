@@ -122,6 +122,7 @@ class Octo_AJAX_Perfex_Import {
 			'host'   => $db_config['host'],
 			'name'   => $db_config['name'],
 			'user'   => $db_config['user'],
+			'pass'   => $db_config['pass'],
 			'prefix' => $db_config['prefix'],
 		) );
 
