@@ -17,6 +17,7 @@ class Octo_AJAX_Perfex_Import {
 	const BATCH_SIZE_COMPANIES = 20;
 	const BATCH_SIZE_CONTACTS  = 50;
 	const BATCH_SIZE_NOTES     = 50;
+	const BATCH_SIZE_INVOICES  = 50;
 
 	public function __construct() {
 		add_action( 'wp_ajax_octo_perfex_import_connect', array( $this, 'handle_connect' ) );
@@ -106,6 +107,13 @@ class Octo_AJAX_Perfex_Import {
 		// Rechnungsempfänger zählen
 		$res_inv = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}contacts` WHERE invoice_emails = 1" );
 		$counts['invoice_recipients'] = $res_inv ? (int) $res_inv->fetch_row()[0] : 0;
+
+		// Rechnungen zählen (nur wenn octo-invoice aktiv)
+		$counts['invoices'] = 0;
+		if ( class_exists( 'Octo_Invoice_Import_Service' ) ) {
+			$res_inv2 = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}invoices`" );
+			$counts['invoices'] = $res_inv2 ? (int) $res_inv2->fetch_row()[0] : 0;
+		}
 
 		$mysqli->close();
 
@@ -210,16 +218,19 @@ class Octo_AJAX_Perfex_Import {
 			'contacts_updated'  => 0,
 			'invoice_recipients'=> 0,
 			'notes'             => 0,
+			'invoices_new'      => 0,
 			'skipped'           => 0,
 			'errors'            => array(),
 		);
 
 		if ( 'companies' === $phase ) {
 			$this->batch_companies( $mysqli, $prefix, $include_inactive, $owner_id, $offset, $stats, $wpdb );
-			$is_complete = $stats['_batch_count'] < self::BATCH_SIZE_COMPANIES;
+			$is_complete  = $stats['_batch_count'] < self::BATCH_SIZE_COMPANIES;
+			$batch_size   = self::BATCH_SIZE_COMPANIES;
 		} elseif ( 'contacts' === $phase ) {
 			$this->batch_contacts( $mysqli, $prefix, $include_inactive, $owner_id, $tag_name, $offset, $stats, $wpdb );
-			$is_complete = $stats['_batch_count'] < self::BATCH_SIZE_CONTACTS;
+			$is_complete  = $stats['_batch_count'] < self::BATCH_SIZE_CONTACTS;
+			$batch_size   = self::BATCH_SIZE_CONTACTS;
 		} elseif ( 'notes' === $phase ) {
 			if ( $import_notes ) {
 				$this->batch_notes( $mysqli, $prefix, $include_inactive, $offset, $stats, $wpdb );
@@ -227,8 +238,14 @@ class Octo_AJAX_Perfex_Import {
 			} else {
 				$is_complete = true;
 			}
+			$batch_size = self::BATCH_SIZE_NOTES;
+		} elseif ( 'invoices' === $phase ) {
+			$this->batch_invoices( $db_config, $offset, $stats );
+			$is_complete = $stats['_batch_count'] < self::BATCH_SIZE_INVOICES;
+			$batch_size  = self::BATCH_SIZE_INVOICES;
 		} else {
 			$is_complete = true;
+			$batch_size  = 50;
 		}
 
 		$mysqli->close();
@@ -238,7 +255,7 @@ class Octo_AJAX_Perfex_Import {
 		wp_send_json_success( array(
 			'stats'       => $stats,
 			'is_complete' => $is_complete,
-			'next_offset' => $is_complete ? 0 : ( $offset + ( 'companies' === $phase ? self::BATCH_SIZE_COMPANIES : self::BATCH_SIZE_CONTACTS ) ),
+			'next_offset' => $is_complete ? 0 : ( $offset + $batch_size ),
 		) );
 	}
 
@@ -609,6 +626,33 @@ class Octo_AJAX_Perfex_Import {
 		}
 
 		$stats['_batch_count'] = $count;
+	}
+
+	// -------------------------------------------------------------------------
+	// Batch: Rechnungen (via octo-invoice)
+	// -------------------------------------------------------------------------
+
+	private function batch_invoices( array $db_config, int $offset, array &$stats ): void {
+		$stats['_batch_count'] = 0;
+
+		if ( ! class_exists( 'Octo_Invoice_Import_Service' ) ) {
+			// octo-invoice nicht aktiv – Phase überspringen.
+			return;
+		}
+
+		$result = Octo_Invoice_Import_Service::import_from_perfex_batch(
+			$db_config,
+			$offset,
+			self::BATCH_SIZE_INVOICES
+		);
+
+		$stats['_batch_count']  = (int) ( $result['batch_count'] ?? 0 );
+		$stats['invoices_new'] += (int) ( $result['imported']    ?? 0 );
+		$stats['skipped']      += (int) ( $result['skipped']     ?? 0 );
+
+		if ( ! empty( $result['errors'] ) ) {
+			$stats['errors'] = array_merge( $stats['errors'], $result['errors'] );
+		}
 	}
 
 	// -------------------------------------------------------------------------

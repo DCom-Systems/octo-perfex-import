@@ -232,6 +232,10 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 						<div class="octo-import-stat-label"><?php esc_html_e( 'Notizen', 'octoserv' ); ?></div>
 					</div>
 					<div class="octo-import-stat-card">
+						<div class="octo-import-stat-value" id="pimport-stat-invoices">0</div>
+						<div class="octo-import-stat-label"><?php esc_html_e( 'Rechnungen', 'octoserv' ); ?></div>
+					</div>
+					<div class="octo-import-stat-card">
 						<div class="octo-import-stat-value" id="pimport-stat-errors" style="color:#e44;">0</div>
 						<div class="octo-import-stat-label"><?php esc_html_e( 'Fehler', 'octoserv' ); ?></div>
 					</div>
@@ -272,6 +276,10 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 					<div class="octo-import-stat-card">
 						<div class="octo-import-stat-value" id="pimport-result-notes">0</div>
 						<div class="octo-import-stat-label"><?php esc_html_e( 'Notizen', 'octoserv' ); ?></div>
+					</div>
+					<div class="octo-import-stat-card">
+						<div class="octo-import-stat-value" id="pimport-result-invoices-new">0</div>
+						<div class="octo-import-stat-label"><?php esc_html_e( 'Neue Rechnungen', 'octoserv' ); ?></div>
 					</div>
 					<div class="octo-import-stat-card">
 						<div class="octo-import-stat-value" id="pimport-result-skipped">0</div>

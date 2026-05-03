@@ -19,6 +19,7 @@
             contacts_updated:   0,
             invoice_recipients: 0,
             notes:              0,
+            invoices_new:       0,
             skipped:            0,
             errors:             []
         },
@@ -75,6 +76,9 @@
                         prefix: $('#pimport-db-prefix').val() || 'tbl'
                     };
 
+                    var invRow = d.invoices > 0
+                        ? '<tr><td>Rechnungen:</td><td><strong>' + d.invoices + '</strong></td></tr>'
+                        : '';
                     $res.html(
                         '<div class="octo-import-success" style="background:#f0faf0;border:1px solid #7dc97d;padding:12px 16px;border-radius:4px;">' +
                         '<strong>&#10003; Verbunden!</strong><br>' +
@@ -84,6 +88,7 @@
                         '<tr><td>Kontakte:</td><td><strong>' + d.contacts + '</strong></td>' +
                         '<td style="padding:2px 0 2px 16px;">Rechnungsempfänger:</td><td><strong style="color:#E09000;">' + d.invoice_recipients + '</strong></td></tr>' +
                         '<tr><td>Notizen:</td><td><strong>' + d.notes + '</strong></td></tr>' +
+                        invRow +
                         '</table></div>'
                     ).show();
                     $('#pimport-btn-step1-next').show();
@@ -192,7 +197,7 @@
         startImport: function () {
             this.cancelled  = false;
             this.importId   = 'pimport_' + Date.now();
-            this.totalStats = { companies_new:0, companies_updated:0, contacts_new:0, contacts_updated:0, invoice_recipients:0, notes:0, skipped:0, errors:[] };
+            this.totalStats = { companies_new:0, companies_updated:0, contacts_new:0, contacts_updated:0, invoice_recipients:0, notes:0, invoices_new:0, skipped:0, errors:[] };
 
             this.showStep(4);
             this.resetLiveStats();
@@ -203,8 +208,8 @@
             if (this.cancelled) return;
 
             var self       = this;
-            var phaseTotal = { companies: this.dbConfig._companies || 0, contacts: this.dbConfig._contacts || 0, notes: this.dbConfig._notes || 0 };
-            var phaseName  = { companies: 'Firmen importieren…', contacts: 'Kontakte importieren…', notes: 'Notizen importieren…' };
+            var phaseTotal = { companies: this.dbConfig._companies || 0, contacts: this.dbConfig._contacts || 0, notes: this.dbConfig._notes || 0, invoices: this.dbConfig._invoices || 0 };
+            var phaseName  = { companies: 'Firmen importieren…', contacts: 'Kontakte importieren…', notes: 'Notizen importieren…', invoices: 'Rechnungen importieren…' };
 
             $('#pimport-phase-label').text(phaseName[phase] || '');
 
@@ -238,15 +243,16 @@
                     self.runPhase(phase, resp.data.next_offset);
                 } else {
                     // Nächste Phase
-                    var next = { companies: 'contacts', contacts: 'notes', notes: null };
+                    var next = { companies: 'contacts', contacts: 'notes', notes: 'invoices', invoices: null };
                     var nextPhase = next[phase];
 
-                    if (nextPhase && (nextPhase !== 'notes' || self.options.import_notes)) {
-                        self.runPhase(nextPhase, 0);
+                    if (!nextPhase) {
+                        self.finishImport();
                     } else if (nextPhase === 'notes' && !self.options.import_notes) {
-                        self.finishImport();
+                        // Notizen übersprungen → direkt zu Rechnungen
+                        self.runPhase('invoices', 0);
                     } else {
-                        self.finishImport();
+                        self.runPhase(nextPhase, 0);
                     }
                 }
             })
@@ -263,6 +269,7 @@
             this.totalStats.contacts_updated   += s.contacts_updated   || 0;
             this.totalStats.invoice_recipients += s.invoice_recipients || 0;
             this.totalStats.notes              += s.notes              || 0;
+            this.totalStats.invoices_new       += s.invoices_new       || 0;
             this.totalStats.skipped            += s.skipped            || 0;
             if (s.errors && s.errors.length) {
                 this.totalStats.errors = this.totalStats.errors.concat(s.errors);
@@ -275,6 +282,7 @@
             $('#pimport-stat-contacts').text(t.contacts_new + t.contacts_updated);
             $('#pimport-stat-recipients').text(t.invoice_recipients);
             $('#pimport-stat-notes').text(t.notes);
+            $('#pimport-stat-invoices').text(t.invoices_new);
             $('#pimport-stat-errors').text(t.errors.length);
         },
 
@@ -282,16 +290,22 @@
             var msgs = {
                 companies: isComplete ? 'Firmen fertig.' : 'Firmen: ' + (offset + 20) + ' verarbeitet…',
                 contacts:  isComplete ? 'Kontakte fertig.' : 'Kontakte: ' + offset + ' verarbeitet…',
-                notes:     isComplete ? 'Notizen fertig.' : 'Notizen: ' + offset + ' verarbeitet…'
+                notes:     isComplete ? 'Notizen fertig.' : 'Notizen: ' + offset + ' verarbeitet…',
+                invoices:  isComplete ? 'Rechnungen fertig.' : 'Rechnungen: ' + offset + ' verarbeitet…'
             };
             $('#pimport-progress-info').text(msgs[phase] || '');
 
-            var pct = { companies: isComplete ? 33 : Math.min(30, offset / 2), contacts: isComplete ? 66 : 33 + Math.min(30, offset / 3), notes: isComplete ? 100 : 66 + Math.min(30, offset / 3) };
+            var pct = {
+                companies: isComplete ? 25 : Math.min(22, offset / 2),
+                contacts:  isComplete ? 50 : 25 + Math.min(22, offset / 3),
+                notes:     isComplete ? 75 : 50 + Math.min(22, offset / 3),
+                invoices:  isComplete ? 100 : 75 + Math.min(22, offset / 3)
+            };
             $('#pimport-progress-fill').css('width', (pct[phase] || 0) + '%');
         },
 
         resetLiveStats: function () {
-            $('#pimport-stat-companies, #pimport-stat-contacts, #pimport-stat-recipients, #pimport-stat-notes, #pimport-stat-errors').text('0');
+            $('#pimport-stat-companies, #pimport-stat-contacts, #pimport-stat-recipients, #pimport-stat-notes, #pimport-stat-invoices, #pimport-stat-errors').text('0');
             $('#pimport-progress-fill').css('width', '0%');
             $('#pimport-progress-info').text('');
         },
@@ -308,6 +322,7 @@
             $('#pimport-result-contacts-updated').text(t.contacts_updated);
             $('#pimport-result-recipients').text(t.invoice_recipients);
             $('#pimport-result-notes').text(t.notes);
+            $('#pimport-result-invoices-new').text(t.invoices_new);
             $('#pimport-result-skipped').text(t.skipped);
 
             if (t.errors.length) {
@@ -345,7 +360,7 @@
         // Neu starten
         // -----------------------------------------------------------------------
         restart: function () {
-            this.totalStats = { companies_new:0, companies_updated:0, contacts_new:0, contacts_updated:0, invoice_recipients:0, notes:0, skipped:0, errors:[] };
+            this.totalStats = { companies_new:0, companies_updated:0, contacts_new:0, contacts_updated:0, invoice_recipients:0, notes:0, invoices_new:0, skipped:0, errors:[] };
             $('#pimport-error-list, #pimport-error-card').hide();
             $('#pimport-error-ul').empty();
             this.showStep(1);
