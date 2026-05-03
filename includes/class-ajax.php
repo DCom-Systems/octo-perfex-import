@@ -264,11 +264,27 @@ class Octo_AJAX_Perfex_Import {
 			$count++;
 			$perfex_id = (int) $client->userid;
 
-			// Duplikat-Check via perfex_company_id meta
+			// Duplikat-Check 1: via perfex_company_id meta
 			$existing_id = (int) $wpdb->get_var( $wpdb->prepare(
 				"SELECT company_id FROM `{$companymeta_table}` WHERE meta_key = 'perfex_company_id' AND meta_value = %s LIMIT 1",
 				(string) $perfex_id
 			) );
+
+			// Duplikat-Check 2: via Firmenname (für Firmen ohne perfex_company_id, z.B. via octo-invoice importiert)
+			if ( ! $existing_id ) {
+				$existing_id = (int) $wpdb->get_var( $wpdb->prepare(
+					"SELECT ID FROM `{$wpdb->prefix}gh_companies` WHERE name = %s LIMIT 1",
+					sanitize_text_field( $client->company )
+				) );
+				if ( $existing_id ) {
+					// perfex_company_id nachrüsten damit zukünftige Re-Imports sauber laufen
+					$wpdb->insert(
+						$companymeta_table,
+						array( 'company_id' => $existing_id, 'meta_key' => 'perfex_company_id', 'meta_value' => (string) $perfex_id ),
+						array( '%d', '%s', '%s' )
+					);
+				}
+			}
 
 			$address = trim( implode( ', ', array_filter( array(
 				$client->address ?? '',
