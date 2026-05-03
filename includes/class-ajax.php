@@ -310,15 +310,16 @@ class Octo_AJAX_Perfex_Import {
 			) ) ) );
 
 			if ( $existing_id ) {
-				// Update: Name, Domain, Adresse, Telefon
+				// Update: Name, Domain, Verantwortlicher, Adresse, Telefon
 				$wpdb->update(
 					$wpdb->prefix . 'gh_companies',
 					array(
-						'name'   => sanitize_text_field( $client->company ),
-						'domain' => esc_url_raw( $client->website ?? '' ),
+						'name'     => sanitize_text_field( $client->company ),
+						'domain'   => esc_url_raw( $client->website ?? '' ),
+						'owner_id' => $owner_id,
 					),
 					array( 'ID' => $existing_id ),
-					array( '%s', '%s' ),
+					array( '%s', '%s', '%d' ),
 					array( '%d' )
 				);
 				$this->upsert_companymeta( $wpdb, $existing_id, 'phone',   sanitize_text_field( $client->phonenumber ?? '' ) );
