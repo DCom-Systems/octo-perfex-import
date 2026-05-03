@@ -128,12 +128,12 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 
 				<div id="pimport-connect-result" style="display:none; margin-top:16px;"></div>
 
-				<div class="octo-import-actions" style="margin-top:20px;">
-					<button type="button" id="pimport-btn-connect" class="octo-btn octo-btn-primary">
+				<div class="octo-import-actions" style="margin-top:20px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+					<button type="button" id="pimport-btn-connect" class="octo-btn octo-btn-secondary" style="width:auto;">
 						<span class="dashicons dashicons-migrate" style="margin-right:4px;"></span>
 						<?php esc_html_e( 'Verbindung testen', 'octoserv' ); ?>
 					</button>
-					<button type="button" id="pimport-btn-step1-next" class="octo-btn octo-btn-primary" style="display:none; margin-left:8px;">
+					<button type="button" id="pimport-btn-step1-next" class="octo-btn octo-btn-primary" style="display:none; width:auto;">
 						<?php esc_html_e( 'Weiter', 'octoserv' ); ?> &rarr;
 					</button>
 				</div>
@@ -178,9 +178,9 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 					</div>
 				</div>
 
-				<div class="octo-import-actions" style="margin-top:20px;">
-					<button type="button" id="pimport-btn-step2-back" class="octo-btn octo-btn-secondary">&larr; <?php esc_html_e( 'Zurück', 'octoserv' ); ?></button>
-					<button type="button" id="pimport-btn-step2-next" class="octo-btn octo-btn-primary" style="margin-left:8px;">
+				<div class="octo-import-actions" style="margin-top:20px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+					<button type="button" id="pimport-btn-step2-back" class="octo-btn octo-btn-secondary" style="width:auto;">&larr; <?php esc_html_e( 'Zurück', 'octoserv' ); ?></button>
+					<button type="button" id="pimport-btn-step2-next" class="octo-btn octo-btn-primary" style="width:auto;">
 						<?php esc_html_e( 'Vorschau laden', 'octoserv' ); ?> &rarr;
 					</button>
 				</div>
@@ -193,9 +193,9 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 
 				<div id="pimport-preview-table"></div>
 
-				<div class="octo-import-actions" style="margin-top:20px;">
-					<button type="button" id="pimport-btn-step3-back" class="octo-btn octo-btn-secondary">&larr; <?php esc_html_e( 'Zurück', 'octoserv' ); ?></button>
-					<button type="button" id="pimport-btn-start" class="octo-btn octo-btn-primary" style="margin-left:8px;">
+				<div class="octo-import-actions" style="margin-top:20px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+					<button type="button" id="pimport-btn-step3-back" class="octo-btn octo-btn-secondary" style="width:auto;">&larr; <?php esc_html_e( 'Zurück', 'octoserv' ); ?></button>
+					<button type="button" id="pimport-btn-start" class="octo-btn octo-btn-primary" style="width:auto;">
 						<span class="dashicons dashicons-migrate" style="margin-right:4px;"></span>
 						<?php esc_html_e( 'Import starten', 'octoserv' ); ?>
 					</button>
@@ -241,8 +241,8 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 					</div>
 				</div>
 
-				<div class="octo-import-actions" style="margin-top:20px;">
-					<button type="button" id="pimport-btn-cancel" class="octo-btn octo-btn-secondary">
+				<div class="octo-import-actions" style="margin-top:20px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+					<button type="button" id="pimport-btn-cancel" class="octo-btn octo-btn-secondary" style="width:auto;">
 						<?php esc_html_e( 'Abbrechen', 'octoserv' ); ?>
 					</button>
 				</div>
@@ -296,14 +296,14 @@ wp_localize_script( 'octo-perfex-import', 'octoPerfexImportData', array(
 					<ul id="pimport-error-ul" style="max-height:200px; overflow-y:auto; background:#fff3f3; border:1px solid #f5c6c6; padding:12px 12px 12px 28px; border-radius:4px;"></ul>
 				</div>
 
-				<div class="octo-import-actions">
-					<a href="<?php echo esc_url( home_url( '/octo/companies' ) ); ?>" class="octo-btn octo-btn-primary">
+				<div class="octo-import-actions" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+					<a href="<?php echo esc_url( home_url( '/octo/companies' ) ); ?>" class="octo-btn octo-btn-primary" style="width:auto;">
 						<?php esc_html_e( 'Zu den Firmen', 'octoserv' ); ?>
 					</a>
-					<a href="<?php echo esc_url( home_url( '/octo/contacts' ) ); ?>" class="octo-btn octo-btn-secondary" style="margin-left:8px;">
+					<a href="<?php echo esc_url( home_url( '/octo/contacts' ) ); ?>" class="octo-btn octo-btn-secondary" style="width:auto;">
 						<?php esc_html_e( 'Zu den Kontakten', 'octoserv' ); ?>
 					</a>
-					<button type="button" id="pimport-btn-restart" class="octo-btn octo-btn-secondary" style="margin-left:8px;">
+					<button type="button" id="pimport-btn-restart" class="octo-btn octo-btn-secondary" style="width:auto;">
 						<?php esc_html_e( 'Neuer Import', 'octoserv' ); ?>
 					</button>
 				</div>
