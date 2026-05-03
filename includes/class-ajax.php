@@ -324,6 +324,14 @@ class Octo_AJAX_Perfex_Import {
 				$this->upsert_companymeta( $wpdb, $existing_id, 'phone',   sanitize_text_field( $client->phonenumber ?? '' ) );
 				$this->upsert_companymeta( $wpdb, $existing_id, 'address', sanitize_text_field( $address ) );
 				$this->upsert_companymeta( $wpdb, $existing_id, 'vat_id',  sanitize_text_field( $client->vat ?? '' ) );
+				// gh_company_id in os_cli_companies sicherstellen (nötig für Rechnungsverknüpfung)
+				$wpdb->update(
+					$wpdb->prefix . 'os_cli_companies',
+					array( 'gh_company_id' => $existing_id ),
+					array( 'external_source' => 'perfex', 'external_id' => (string) $perfex_id ),
+					array( '%d' ),
+					array( '%s', '%s' )
+				);
 				$stats['companies_updated']++;
 			} else {
 				// Neu anlegen
@@ -363,6 +371,15 @@ class Octo_AJAX_Perfex_Import {
 						'meta_value' => (string) $perfex_id,
 					),
 					array( '%d', '%s', '%s' )
+				);
+
+				// gh_company_id in os_cli_companies setzen (nötig für Rechnungsverknüpfung)
+				$wpdb->update(
+					$wpdb->prefix . 'os_cli_companies',
+					array( 'gh_company_id' => $new_id ),
+					array( 'external_source' => 'perfex', 'external_id' => (string) $perfex_id ),
+					array( '%d' ),
+					array( '%s', '%s' )
 				);
 
 				$stats['companies_new']++;
