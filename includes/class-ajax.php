@@ -93,8 +93,9 @@ class Octo_AJAX_Perfex_Import {
 		$prefix = $db_config['prefix'];
 
 		$counts = array();
-		foreach ( array( 'companies' => 'clients', 'contacts' => 'contacts', 'notes' => 'customernotes' ) as $key => $table ) {
-			$res = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}{$table}`" );
+		foreach ( array( 'companies' => 'clients', 'contacts' => 'contacts', 'notes' => 'notes' ) as $key => $table ) {
+			$where_notes = ( $table === 'notes' ) ? " WHERE rel_type = 'customer'" : '';
+			$res = $mysqli->query( "SELECT COUNT(*) FROM `{$prefix}{$table}`{$where_notes}" );
 			$counts[ $key ] = $res ? (int) $res->fetch_row()[0] : 0;
 		}
 
@@ -523,11 +524,12 @@ class Octo_AJAX_Perfex_Import {
 		$limit = self::BATCH_SIZE_NOTES;
 
 		// Notizen mit primärer E-Mail des Kunden abrufen
-		$sql = "SELECT cn.*, c.email
-		        FROM `{$prefix}customernotes` cn
-		        LEFT JOIN `{$prefix}contacts` c ON c.userid = cn.userid AND c.is_primary = 1
-		        LEFT JOIN `{$prefix}clients` cl ON cl.userid = cn.userid
-		        {$where}ORDER BY cn.id ASC LIMIT {$limit} OFFSET {$offset}";
+		$where_full = $include_inactive ? "WHERE n.rel_type = 'customer'" : "WHERE n.rel_type = 'customer' AND cl.active = 1";
+		$sql = "SELECT n.id, n.description AS note, n.dateadded AS date, c.email
+		        FROM `{$prefix}notes` n
+		        LEFT JOIN `{$prefix}clients` cl ON cl.userid = n.rel_id
+		        LEFT JOIN `{$prefix}contacts` c ON c.userid = n.rel_id AND c.is_primary = 1
+		        {$where_full} ORDER BY n.id ASC LIMIT {$limit} OFFSET {$offset}";
 		$res = $mysqli->query( $sql );
 
 		$count = 0;
