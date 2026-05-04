@@ -467,13 +467,19 @@ class Octo_AJAX_Perfex_Import {
 					$stats['skipped']++;
 					continue;
 				}
-				$gh = new \Groundhogg\Contact( array(
-					'email'      => $email,
-					'first_name' => sanitize_text_field( $contact->firstname ?? '' ),
-					'last_name'  => sanitize_text_field( $contact->lastname  ?? '' ),
-					'owner_id'   => $owner_id,
-				) );
-				if ( ! $gh->exists() ) {
+				try {
+					$gh = new \Groundhogg\Contact( array(
+						'email'      => $email,
+						'first_name' => sanitize_text_field( $contact->firstname ?? '' ),
+						'last_name'  => sanitize_text_field( $contact->lastname  ?? '' ),
+						'owner_id'   => $owner_id,
+					) );
+				} catch ( \Throwable $e ) {
+					// Drittanbieter-Hook (z.B. bit-pi) wirft nach DB-Insert eine Exception.
+					// Kontakt wurde trotzdem angelegt → per E-Mail nachschlagen.
+					$gh = function_exists( '\Groundhogg\get_contactdata' ) ? \Groundhogg\get_contactdata( $email ) : null;
+				}
+				if ( ! $gh || ! $gh->exists() ) {
 					$stats['errors'][] = 'Kontakt ' . esc_html( $email ) . ': konnte nicht angelegt werden.';
 					continue;
 				}
